@@ -1,0 +1,9 @@
+{
+    "azTenantId": "3c32ed40-8a10-465b-8ba4-0b1e86882668",
+    "azClientId": "f9ba52fa-7908-4e28-8e18-5c3e75fc9db9",
+    "azClientSecret": "1bWD_tu3~9B0_.ROW3BFJN-Hu_xjfR8EL5",
+    "kvVaultUri": "https://didkvforsamplehost.vault.azure.net/",
+    "kvSigningKeyId": "5e19f6abfe59d1fb",
+    "kvRecoveryKeyId": "ec80873e43421513",
+    "did": "did:ion:EiCfS44JQr5XQdXqvzna6FrjG6B91cNn7dYeNa1AUhtqbg?-ion-initial-state=eyJkZWx0YV9oYXNoIjoiRWlDWnk0aThpa3ZfSm05Y3pmSm5CWGozYnFuNFdOY2VrUTRuSWVZWUJyZWtBZyIsInJlY292ZXJ5X2NvbW1pdG1lbnQiOiJFaUNnTlEzQXpHQ1lrODBFbjhWa0FGSkYyTXptRG1GNlpabVZDYk9oNzNHdGF3In0.eyJ1cGRhdGVfY29tbWl0bWVudCI6IkVpQTZtMGN0cmJ6a3dZWkhkNDc4ODVVeHhpUEF1TnkwZXR2TzNWVWtid25vMUEiLCJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljX2tleXMiOlt7ImlkIjoiNWUxOWY2YWJmZTU5ZDFmYiIsInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkiLCJqd2siOnsia2lkIjoiaHR0cHM6Ly9kaWRrdmZvcnNhbXBsZWhvc3QudmF1bHQuYXp1cmUubmV0L2tleXMvNWUxOWY2YWJmZTU5ZDFmYi81NWQwODQwZGZiYTE0NWU1OWMxMDIzMDRmNjJmZjI1ZSIsImt0eSI6IkVDIiwiY3J2Ijoic2VjcDI1NmsxIiwieCI6IjI2dko4ZFl0YVVyaXBjTnJXUUZEZmpzQVRUMHdQOFJiV1B3c19VMUNhTHMiLCJ5IjoiSUNiUEpRT0VCQkxpU0ZwTDlES2wtb2RpOEVFMGRHNERnV3FPd1c4Z0o4RSJ9LCJwdXJwb3NlIjpbImF1dGgiLCJnZW5lcmFsIl19XX19XX0"
+}
