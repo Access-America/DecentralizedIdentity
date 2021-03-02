@@ -20,7 +20,8 @@ var { CryptoBuilder,
       RequestorBuilder, 
       ValidatorBuilder,
       KeyReference,
-      KeyUse
+      KeyUse,
+      ManagedHttpResolver
     } = require('verifiablecredentials-verification-sdk-typescript');
 
 /////////// Verifier's client details
@@ -41,9 +42,12 @@ if (!config.did) {
 const kvCredentials = new ClientSecretCredential(config.azTenantId, config.azClientId, config.azClientSecret);
 const signingKeyReference = new KeyReference(config.kvSigningKeyId, 'key');
 const recoveryKeyReference = new KeyReference(config.kvRecoveryKeyId, 'key');
+const updateKeyReference = new KeyReference(config.kvUpdateKeyId, 'key');
+
 var crypto = new CryptoBuilder()
     .useSigningKeyReference(signingKeyReference)
     .useRecoveryKeyReference(recoveryKeyReference)
+    .useUpdateKeyReference(updateKeyReference)
     .useKeyVault(kvCredentials, config.kvVaultUri)
     .useDid(config.did)
     .build();
@@ -52,6 +56,7 @@ var crypto = new CryptoBuilder()
 //const credentialType = 'VerifiedCredentialNinja';
 //const issuerDid = ['did:ion:EiDRCyqCjGGy-ILyZBOO8QejJei7pG0V-RyO-BDQieiteg?-ion-initial-state=eyJkZWx0YV9oYXNoIjoiRWlDczFxa2RwbGxrbzN5OGJvNE9aVjNjTEoyUkNaeTI3SXp5ZkNYLUNlR1ZZUSIsInJlY292ZXJ5X2NvbW1pdG1lbnQiOiJFaUNFZXNtZ0hSbXZSckRCVlpiLU1jT1lTVURoZERuMGhsRVlKSzBIQnpETG9RIn0.eyJ1cGRhdGVfY29tbWl0bWVudCI6IkVpQ1lDVU9pRWZ6T0tXVm1pVmpJZUJLX0tkVGZReEdyMGdFMjR0WUxySmVVUHciLCJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljX2tleXMiOlt7ImlkIjoic2lnX2Y1ZTA0ZDVlIiwidHlwZSI6IkVjZHNhU2VjcDI1NmsxVmVyaWZpY2F0aW9uS2V5MjAxOSIsImp3ayI6eyJrdHkiOiJFQyIsImNydiI6InNlY3AyNTZrMSIsIngiOiJBVjRPUTc1eGNvSmxzVkpMcHkxUjlGVTdzd0FaTFJ0ZW44VTZhb0lKU2hnIiwieSI6Ik8tMGJBcUR2NFZsSlZ2SGhJMUgwS2FVcTVia1ZjRjdpbjRlSDVDTVB6TlUifSwicHVycG9zZSI6WyJhdXRoIiwiZ2VuZXJhbCJdfV19fV19'];
 const credentialType = 'socure';
+// NEEDS TO BE REGENERATED:
 const issuerDid = ['did:ion:EiD_wQgizr8NxoXoaJ71a_qoJ3uaNfoOx-N8dOvDe_yYbg?-ion-initial-state=eyJkZWx0YV9oYXNoIjoiRWlEaS1PSy1WSTk3b1lZUTFrUFBUQUlzQjVkNDJlSm9VOWpaRHBJOENkUGFzQSIsInJlY292ZXJ5X2NvbW1pdG1lbnQiOiJFaURNeVRjQ2thUnliSDJvbFpBa2lGV3lBVENOeEd5Um55YWxUd2g4Y0pKS1dRIn0.eyJ1cGRhdGVfY29tbWl0bWVudCI6IkVpREd3VFJWb2RXN3hwcFE1X3U0emUwbTNYTTFnTlpqY2NNek9GRERrQkJHemciLCJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljX2tleXMiOlt7ImlkIjoic2lnXzgwNzliNTIyIiwidHlwZSI6IkVjZHNhU2VjcDI1NmsxVmVyaWZpY2F0aW9uS2V5MjAxOSIsImp3ayI6eyJrdHkiOiJFQyIsImNydiI6InNlY3AyNTZrMSIsIngiOiJBZ1RyZEVOcFVqWFpnVVhWamd3ZUlza0ZPdjR0M3gwNDdwelF1bENleEs0IiwieSI6IlpiUmk4QUFUUDVkSzhBZ3MyT3BDVU5EdE16ODQ4YUlNWW1ZYU9seFowcHcifSwicHVycG9zZSI6WyJhdXRoIiwiZ2VuZXJhbCJdfV19fV19'];
 //optional, this adds the posibility to redirect the user to get a VC from the issuer if they don't have one in their wallet yet.
 const credential = 'https://portableidentitycards.azure-api.net/v1.0/72b666a1-cc97-4df7-9466-d230923fa3ce/portableIdentities/contracts/socure';
@@ -106,7 +111,7 @@ app.get("/echo",
 );
 
 // Generate an presentation request, cache it on the server,
-// and return a reference to the issuance reqeust. The reference
+// and return a reference to the issuance request. The reference
 // will be displayed to the user on the client side as a QR code.
 app.get('/presentation-request', async (req, res) => {
   console.log( "/presentation-request");
@@ -179,12 +184,17 @@ app.post('/presentation-response', parser, async (req, res) => {
   // and claims in the credential presentation.
   const clientId = `https://${req.hostname}/presentation-response`
 
+  // TEMPORARY OVERRIDE OF THE RESOLVER
+  const didResolver = new ManagedHttpResolver('https://beta.discover.did.msidentity.com/1.0/identifiers/');
+
   // Validate the credential presentation and extract the credential's attributes.
   // If this check succeeds, the user is a Verified Credential Ninja.
   // Log a message to the console indicating successful verification of the credential.
   const validator = new ValidatorBuilder(crypto)
     .useTrustedIssuersForVerifiableCredentials({[credentialType]: issuerDid})
     .useAudienceUrl(clientId)
+    .useResolver(didResolver)
+    .enableFeatureVerifiedCredentialsStatusCheck(false)
     .build();
 
   const token = req.body.id_token;
