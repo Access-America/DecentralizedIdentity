@@ -60,7 +60,7 @@ var crypto = new CryptoBuilder()
   const credential = 'https://portableidentitycards.azure-api.net/v1.0/72b666a1-cc97-4df7-9466-d230923fa3ce/portableIdentities/contracts/socure';
 */
 
-const credentialType = 'VerifiedCredentialNinja';
+const credentialType = 'AccessAmerica';
 const issuerDid = ['did:ion:EiDIyW-TteXeZ_FwW2gVkleUnqyf_LQUUcqLopiP4h8Vgw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJzaWdfMDNkZTJhZDQiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiRjZBTDVYWFVxQUowRzB6QzVHYXdEMUg4Rzh6OUY3ZFk5MWgwdFVTUzh5YyIsInkiOiJyYWllbWVTOUhvdS14cmFrRzJoU2lGcTNxNFVpOHhlVDktamN'];
 const credential = 'credential: https://beta.did.msidentity.com/v1.0/58b6b846-9cc7-4226-af35-5816c2f9336c/verifiableCredential/contracts/AccessAmericaTest';
 
