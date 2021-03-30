@@ -26,10 +26,10 @@ var { CryptoBuilder,
 
 /////////// Verifier's client details
 const client = {
-  client_name: 'Sample Verifier',
-  logo_uri: 'https://storagebeta.blob.core.windows.net/static/ninja-icon.png',
+  client_name: 'Access America Verifier',
+  logo_uri: 'https://ccuspocverifier.blob.core.windows.net/verifier-static/icon.png',
   tos_uri: 'https://www.microsoft.com/servicesagreement',
-  client_purpose: 'To check if you know how to use verifiable credentials.'
+  client_purpose: 'Test Access America credential verification.'
 }
 
 ////////// Verifier's DID configuration values
@@ -45,9 +45,9 @@ const kvCredentials = new ClientSecretCredential(config.azTenantId, config.azCli
 const signingKeyReference = new KeyReference(config.kvSigningKeyId, 'key', config.kvRemoteSigningKeyId);
 
 /////////// Set the expected values for the Verifiable Credential
-const credential = 'https://beta.did.msidentity.com/v1.0/3c32ed40-8a10-465b-8ba4-0b1e86882668/verifiableCredential/contracts/VerifiedCredentialNinja';
-const credentialType = 'VerifiedCredentialNinja';
-const issuerDid = ['did:ion:EiAUeAySrc1qgPucLYI_ytfudT8bFxUETNolzz4PCdy1bw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJzaWdfMjRiYjMwNzQiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiRDlqYUgwUTFPZW1XYVVfeGtmRzBJOVoyYnctOFdLUFF2TWt2LWtkdjNxUSIsInkiOiJPclVUSzBKSWN0UnFQTHRCQlQxSW5iMTdZS29sSFJvX1kyS0Zfb3YyMEV3In0sInB1cnBvc2VzIjpbImF1dGhlbnRpY2F0aW9uIiwiYXNzZXJ0aW9uTWV0aG9kIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkifV0sInNlcnZpY2VzIjpbeyJpZCI6ImxpbmtlZGRvbWFpbnMiLCJzZXJ2aWNlRW5kcG9pbnQiOnsib3JpZ2lucyI6WyJodHRwczovL2RpZC53b29kZ3JvdmVkZW1vLmNvbS8iXX0sInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBeWF1TVgzRWtBcUg2RVFUUEw4SmQ4alVvYjZXdlZrNUpSamdodEVYWHhDQSJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQ1NvajVqSlNOUjBKU0tNZEJ1Y2RuMlh5U2ZaYndWVlNIWUNrREllTHV5NnciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUR4Ym1ELTQ5cEFwMDBPakd6VXdoNnY5ZjB5cnRiaU5TbXA3dldwbTREVHpBIn19'];
+const credential = 'https://beta.did.msidentity.com/v1.0/58b6b846-9cc7-4226-af35-5816c2f9336c/verifiableCredential/contracts/AccessAmericaTest';
+const credentialType = 'AccessAmerica';
+const issuerDid = ['did:ion:EiDIyW-TteXeZ_FwW2gVkleUnqyf_LQUUcqLopiP4h8Vgw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJzaWdfMDNkZTJhZDQiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiRjZBTDVYWFVxQUowRzB6QzVHYXdEMUg4Rzh6OUY3ZFk5MWgwdFVTUzh5YyIsInkiOiJyYWllbWVTOUhvdS14cmFrRzJoU2lGcTNxNFVpOHhlVDktamNjel9VaHNvIn0sInB1cnBvc2VzIjpbImF1dGhlbnRpY2F0aW9uIiwiYXNzZXJ0aW9uTWV0aG9kIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkifV0sInNlcnZpY2VzIjpbeyJpZCI6ImxpbmtlZGRvbWFpbnMiLCJzZXJ2aWNlRW5kcG9pbnQiOnsib3JpZ2lucyI6WyJodHRwczovL2FjY2Vzc2FtZXJpY2EudXMvIl19LCJ0eXBlIjoiTGlua2VkRG9tYWlucyJ9XX19XSwidXBkYXRlQ29tbWl0bWVudCI6IkVpRFBNYW5QRDFpMmRiWDk4TXE4a2lBaDB4M0NoU1VQd1V3a1FwNUNqYWttbGcifSwic3VmZml4RGF0YSI6eyJkZWx0YUhhc2giOiJFaUNvbVF3ZktRVWJRT1BReC1mMHFxLVF0d3RPYTM4alBXUmxmcTktamNXWGpnIiwicmVjb3ZlcnlDb21taXRtZW50IjoiRWlBSmpJWWp4MnlJQ2xXalpQOWRNaDVlcWswQ294eFBMWGhPaUJUY3JTdWNoQSJ9fQ'];
 
 var crypto = new CryptoBuilder()
     .useSigningKeyReference(signingKeyReference)
