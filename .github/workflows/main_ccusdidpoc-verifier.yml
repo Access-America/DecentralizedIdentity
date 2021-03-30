@@ -26,6 +26,11 @@ jobs:
       run: |
         cd vc/verifier
         npm install
+        
+    - name: zip    
+      uses: montudor/action-zip@v0.1.1
+      with:
+        args: zip -qq -r node-app.zip vc/verifier
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
@@ -49,6 +54,11 @@ jobs:
       with:
         name: node-app
         path: .
+        
+    - name: unzip    
+      uses: montudor/action-zip@v0.1.1
+      with:
+        args: zip -qq -r node-app.zip node-app
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
