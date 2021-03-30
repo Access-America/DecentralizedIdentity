@@ -24,6 +24,7 @@ jobs:
 
     - name: npm install, build, and test
       run: |
+        cd vc/verifier
         npm install
 
     - name: Upload artifact for deployment job
