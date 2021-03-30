@@ -28,9 +28,8 @@ jobs:
         npm install
         
     - name: Zip
-      run: zip -qq -r node-app.zip . -i /verifier
-      working-directory: ./vc
-  
+      run: zip -qq -r node-app.zip ./vc -i verifier
+
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
       with:
