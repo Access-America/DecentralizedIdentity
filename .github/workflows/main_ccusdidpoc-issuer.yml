@@ -13,6 +13,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ISSUER_AZ_CLIENT_SECRET: ${{ secrets.KV_READER_CLIENT_SECRET }}
 
     steps:
     - uses: actions/checkout@v2
