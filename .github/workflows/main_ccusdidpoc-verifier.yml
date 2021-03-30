@@ -40,9 +40,6 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./vc/verifier
     needs: build
     environment:
       name: 'production'
@@ -58,7 +55,7 @@ jobs:
     - name: unzip    
       uses: montudor/action-zip@v0.1.1
       with:
-        args: zip -qq -r node-app.zip node-app
+        args: zip -qq -r ./node-app.zip node-app
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
@@ -67,4 +64,4 @@ jobs:
         app-name: 'ccusdidpoc-verifier'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_2c49d063e3614f33a546401181fa9000 }}
-        package: node-app
+        package: ./node-app
