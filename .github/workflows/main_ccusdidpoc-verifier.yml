@@ -49,9 +49,6 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: verifier
-        
-    - name: Unzip
-      run: unzip verifier.zip -d verifier
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
