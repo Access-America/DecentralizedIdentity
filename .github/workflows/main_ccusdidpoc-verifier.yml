@@ -52,12 +52,16 @@ jobs:
         
     - name: Unzip
       run: unzip verifier.zip -d verifier
+      
+    - name: filecheck
+      run: |
+        ls -ltr
 
-    - name: 'Deploy to Azure Web App'
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'ccusdidpoc-verifier'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_2c49d063e3614f33a546401181fa9000 }}
-        package: ./verifier/verifier.zip
+#     - name: 'Deploy to Azure Web App'
+#       id: deploy-to-webapp
+#       uses: azure/webapps-deploy@v2
+#       with:
+#         app-name: 'ccusdidpoc-verifier'
+#         slot-name: 'production'
+#         publish-profile: ${{ secrets.AzureAppService_PublishProfile_2c49d063e3614f33a546401181fa9000 }}
+#         package: ./verifier/verifier.zip
