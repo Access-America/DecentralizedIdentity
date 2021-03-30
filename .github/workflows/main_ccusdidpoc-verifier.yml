@@ -4,14 +4,18 @@
 name: Build and deploy Node.js app to Azure Web App - ccusdidpoc-verifier
 
 on:
-  push:
+  push: 
     branches:
-      - main
-  workflow_dispatch:
+    - main
+    paths: 
+    - 'verifier/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./vc/verifier
 
     steps:
     - uses: actions/checkout@v2
@@ -35,6 +39,9 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./vc/verifier
     needs: build
     environment:
       name: 'production'
