@@ -28,11 +28,9 @@ jobs:
         npm install
         
     - name: zip    
-      run: |
-        ls -ltr
-#       uses: montudor/action-zip@v0.1.1
-#       with:
-#         args: zip -qq -r node-app.zip . -i verifier/*
+      uses: montudor/action-zip@v0.1.1
+      with:
+        args: zip -qq -r node-app.zip . -i vc/verifier/*
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
