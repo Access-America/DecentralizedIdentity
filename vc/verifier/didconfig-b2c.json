@@ -13,6 +13,6 @@
         "client_name": "Your Tenant Verifier",
         "logo_uri": "https://yourstorageaccount.blob.core.windows.net/uxcust/templates/images/snoopy-small.jpg",
         "tos_uri": "https://www.microsoft.com/servicesagreement",
-        "client_purpose": "To check if you know how to use verifiable credentials."
+        "client_purpose": "To check if you know how to use verifiable credentials"
     }
 }
