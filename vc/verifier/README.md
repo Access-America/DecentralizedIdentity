@@ -1,54 +1,88 @@
-# Sample Verifier
 
-## Steps to deploy
 
-You to have [node.js](https://nodejs.org/en/download/) installed locally on a development laptop.
-The issuer needs to be accessable on a public endpoint as that is the way Microsoft Authenticator can talk to the service. An easy way to test this is via install [ngrok](https://ngrok.com/download) and let it proxy your localhost as a public endpoint.
+# Verifiable Credentials Verifier Website
 
-1. git clone this repo
-1. cd into vc\verifier
-1. run `npm install`
-1. Edit didconfig-b2c.json (see below)
-1. Start ngrok in a separate command window `ngrok http 8082`
-1. Start the sample issuer from a command window `node app.js` 
+This folder contains a sample website written in NodeJS that verifies a verifiable credential. All code for the website is contained in `app.js`. Essentially, this website does three things:
 
-## Edit didconfig-b2c.json
+1. It generates a QR code and displays it in a browser.
+2. It generates a credential presentation request, which is sent to Microsoft Authenticator after the QR code is scanned.
+3. It receives the requested credential from Authenticator and validates it.
 
-The didconfig-b2c.json file looks like below.
+See our [documentation](https://aka.ms/didfordevs) for a more detailed explanation of the credential presentation and verification process.
 
-```json
-{
-    "azTenantId": "The AAD tenantID that contains atleast one P1 license",
-    "azClientId": "AppID of the app in that tenant that can access the KeyVault",
-    "azClientSecret": "app key",
-    "kvVaultUri": "https://your-keyvault-name.vault.azure.net/",
-    "kvSigningKeyId": "sig_58...db",
-    "kvRemoteSigningKeyId" : "issuerSigningKeyIon-...guid...",
-    "did": "did:ion:...something...",
-    "didVerifier": "did:ion:...something...",
-    "resolverEndpoint": "https://beta.did.msidentity.com/v1.0/9885457a-2026-4e2c-a47e-32ff52ea0b8d/verifiableCredential/contracts/YourtenantMembership",
-    "credentialType": "YourtenantMembership",
-    "client": {
-        "client_name": "Yourtenant Verifier",
-        "logo_uri": "https://yourstorageaccount.blob.core.windows.net/uxcust/templates/images/snoopy-small.jpg",
-        "tos_uri": "https://www.microsoft.com/servicesagreement",
-        "client_purpose": "To check if you know how to use verifiable credentials."
-    }
-}
+There are two ways to run this code sample. 
+
+- Run the code as-is. The sample is set up to request a Credential Ninja Card. 
+- Change the code to request a different verifiable credential.
+
+
+## Running the sample 
+
+Follow these steps to run the sample using a pre-configured Verified Credential Ninja card on your local machine.
+
+1. Clone this repository and `cd` to this `verifier` directory.
+2. Run `npm install` to install all dependencies for the verifier website.
+3. Proceed with each step below to configure and run the website.
+
+### Issue a verifiable credential.
+
+Before you can use the verifier sample, you'll first need to issue a verifiable credential to Authenticator. If you haven't done so already, head on over to the  `../issuer` sample first, and then return to this verifier sample.
+
+### Generate a DID for your verifier
+
+Before running the website, you need to generate a decentralized identifier (DID) that your website will use when it communicates with users. Each DID requires a set of cryptographic keys, whose private key can be stored in Azure Key Vault. To run this sample you can use a key vault we've set up for you. Run the following command to generate a new DID for your verifier and create keys in our key vault:
+
+```
+node ./generate.js
 ```
 
-### Service Principal that can access Azure KeyVault
-The first three items, `azTenantId`, `azClientId` and `azClientSecret` are about registering an application that has access to your Azure Key Vault mentioned in `kvVaultUri`. These values come from the initial config of Azure AD Verifiable Credentials in portal.azure.com.
+You can also use your own Azure Key Vault by following the instructions at the bottom of this README.
 
-If you did run the [ARM deployment script](../vc-setup/DID-deploy-issuer.ps1), it will generate a didconfig.json file where you can copy these values from.
+### Connect Authenticator to your local Node server
 
-### Other config entries
-The values for `kvSigningKeyId`, `kvRemoteSigningKeyId`, `did` and `resolverEndpoint` can be found in portal.azure.com. For `kvRemoteSigningKeyId`, you should copy the middle part and not the full path.
+When you run the sample website, your android device will need to be able to communicate with your Node server via HTTPS requests. Setting this up can be a bit tricky - you have a few options to choose from:
 
-![Issuer Portal info](/media/issuer-config-json.png)
+1. You can deploy the Node server to the cloud, so that Authenticator can communicate with it over the public internet.
+2. You can connect your android device to your machine via USB and configure the network settings appropriately.
+3. You can connect your android device to the same wifi network as your machine, and communicate over the LAN.
+4. You can expose your local machine over the public internet using a tool like ngrok.
 
-The `kvSigningKeyId` can be found via browsing to `https://beta.discover.did.msidentity.com/1.0/identifiers/{your-did}`. The result will be a big JSON document, but next to `verificationMethod`, you will find your value (don't include the # character). 
+We recommend the last option. Here are the steps we used to do so:
 
-## Test
+1. Go to [ngrok.com/](https://ngrok.com/) and create an account.
+2. Follow the instructions to install and configure ngrok.
+3. Start ngrok, exposing your server, which uses port 8082 by default:
 
-Once you have ngrok and the sample issuer started, browse to the website using the ngrok url, launch the QR code and scan it using Microsoft Authenticator. You should already have a VC from running the sample issuer, so all you need to do is to scan the QR code.
+```
+ngrok http 8082
+```
+
+### Run the website
+
+Finally, you're ready to run the website on your local machine:
+
+```bash
+node ./app.js
+```
+
+Once the site is up and running, navigate to the site in a browser using the secure ngrok URL, like `https://ac808a8fbe54.ngrok.io`.
+
+### Using the website
+
+To request and validate a verifiable credential, run the website and navigate to the homepage. Then:
+
+1. Click the button to display a QR code (or a deep link on mobile browsers).
+2. In Authenticator, open the QR scanner.
+3. Approve the request in Authenticator.    
+
+## Modifying the code to use your issuer and verifier
+
+If you've created your own issuer following our [documentation](https://aka.ms/didfordevs), you can edit the code to use your issuer and verifier.
+
+1. In `app.js`, update the `credentialType` value for your verifiable credential.
+2. In `app.js`, update the `issuerDid` value to the expected DID of the issuer of the verifiable credential you expect.
+3. In `app.js`, optionally update the `client` values to reflect your verifier website.
+4. In `didconfig.json`, update all values to use your Azure Key Vault.
+5. Run `node ./generate.js` to generate a new DID for your website and create keys in your Key Vault. 
+
+More instructions on using the VC SDK to request and verify verifiable credentials can be found in our [documentation](https://aka.ms/didfordevs).

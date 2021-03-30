@@ -4,17 +4,17 @@
 // Verifiable Credentials Verifier Sample
 
 ////////////// Node packages
-var http = require('http');
-var fs = require('fs');
-var path = require('path');
+//var http = require('http');
+//var fs = require('fs');
+//var path = require('path');
 var express = require('express')
 var session = require('express-session')
 var bodyParser = require('body-parser')
 var base64url = require('base64url')
 var secureRandom = require('secure-random');
 
-const https = require('https')
-const url = require('url')
+const dotenv = require('dotenv');
+const result = dotenv.config();
 
 //////////////// Verifiable Credential SDK
 var { ClientSecretCredential } = require('@azure/identity');
@@ -24,43 +24,42 @@ var { CryptoBuilder,
       KeyReference
     } = require('verifiablecredentials-verification-sdk-typescript');
 
-////////// Verifiers DID configuration values
-console.log(process);
-var didConfigFile = process.argv.slice(2)[0];
-if ( !didConfigFile ) {
-  didConfigFile = './didconfig-b2c.json';
+/////////// Verifier's client details
+const client = {
+  client_name: 'Sample Verifier',
+  logo_uri: 'https://storagebeta.blob.core.windows.net/static/ninja-icon.png',
+  tos_uri: 'https://www.microsoft.com/servicesagreement',
+  client_purpose: 'To check if you know how to use verifiable credentials.'
 }
-const config = require( didConfigFile )
+
+////////// Verifier's DID configuration values
+const config = require('./didconfig.json')
 if (!config.did) {
   throw new Error('Make sure you run the DID generation script before starting the server.')
 }
 
-/////////// Verifiers client details
-const client = config.client;
+////////// Load the VC SDK with the Issuing Service's DID and Key Vault details
+var verifierAzClientSecret = process.env.VERIFIER_AZ_CLIENT_SECRET;
+//console.log(`verifierAzClientSecret: ${verifierAzClientSecret}`);
+const kvCredentials = new ClientSecretCredential(config.azTenantId, config.azClientId, verifierAzClientSecret);
+const signingKeyReference = new KeyReference(config.kvSigningKeyId, 'key', config.kvRemoteSigningKeyId);
 
 /////////// Set the expected values for the Verifiable Credential
-
-const credential = config.resolverEndpoint
-const issuerDid = [ config.did ]
-var credentialType = '';
-var didContract = null;
-
-////////// Load the VC SDK with the Issuing Service's DID and Key Vault details
-const kvCredentials = new ClientSecretCredential(config.azTenantId, config.azClientId, config.azClientSecret);
-const signingKeyReference = new KeyReference(config.kvSigningKeyId, 'key', config.kvRemoteSigningKeyId);
+const credential = 'https://beta.did.msidentity.com/v1.0/3c32ed40-8a10-465b-8ba4-0b1e86882668/verifiableCredential/contracts/VerifiedCredentialNinja';
+const credentialType = 'VerifiedCredentialNinja';
+const issuerDid = ['did:ion:EiAUeAySrc1qgPucLYI_ytfudT8bFxUETNolzz4PCdy1bw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJzaWdfMjRiYjMwNzQiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiRDlqYUgwUTFPZW1XYVVfeGtmRzBJOVoyYnctOFdLUFF2TWt2LWtkdjNxUSIsInkiOiJPclVUSzBKSWN0UnFQTHRCQlQxSW5iMTdZS29sSFJvX1kyS0Zfb3YyMEV3In0sInB1cnBvc2VzIjpbImF1dGhlbnRpY2F0aW9uIiwiYXNzZXJ0aW9uTWV0aG9kIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkifV0sInNlcnZpY2VzIjpbeyJpZCI6ImxpbmtlZGRvbWFpbnMiLCJzZXJ2aWNlRW5kcG9pbnQiOnsib3JpZ2lucyI6WyJodHRwczovL2RpZC53b29kZ3JvdmVkZW1vLmNvbS8iXX0sInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBeWF1TVgzRWtBcUg2RVFUUEw4SmQ4alVvYjZXdlZrNUpSamdodEVYWHhDQSJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQ1NvajVqSlNOUjBKU0tNZEJ1Y2RuMlh5U2ZaYndWVlNIWUNrREllTHV5NnciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUR4Ym1ELTQ5cEFwMDBPakd6VXdoNnY5ZjB5cnRiaU5TbXA3dldwbTREVHpBIn19'];
 
 var crypto = new CryptoBuilder()
     .useSigningKeyReference(signingKeyReference)
     .useKeyVault(kvCredentials, config.kvVaultUri)
-    .useDid(config.didVerifier)
+    .useDid(config.did)
     .build();
+
 
 //////////// Main Express server function
 // Note: You'll want to update port values for your setup.
 const app = express()
 const port = process.env.PORT || 8082;
-
-var parser = bodyParser.urlencoded({ extended: false });
 
 // Serve static files out of the /public directory
 app.use(express.static('public'))
@@ -77,27 +76,9 @@ app.use(session({
   store: sessionStore
 }))
 
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
-function getDateFormatted() {
-  return new Date().toISOString().replace("T", " ");
-}
-function requestTrace( req ) {
-  var h1 = '//****************************************************************************';
-  console.log( `${h1}\n${getDateFormatted()}: ${req.method} ${req.protocol}://${req.hostname}${req.originalUrl}\n'x-forwarded-for': ${req.headers['x-forwarded-for']}` );
-  if ( req.method == 'POST') {
-    console.log( req.body )
-  }
-}
-
 // echo function so you can test deployment
 app.get("/echo",
     function (req, res) {
-        requestTrace( req );
         res.status(200).json({
             'date': new Date().toISOString(),
             'api': req.protocol + '://' + req.hostname + req.originalUrl,
@@ -106,41 +87,27 @@ app.get("/echo",
             'x-original-host': req.headers['x-original-host'],
             'issuerDid': issuerDid,
             'credentialType': credentialType,
-            'client_purpose': client.client_purpose,
-            'displayCard': didContract.display.card,
-            'buttonColor': "#000080"
-        });
+            'client_purpose': client.client_purpose
+            });
     }
 );
 
 // Serve index.html as the home page
 app.get('/', function (req, res) { 
-  requestTrace( req );
   res.sendFile('public/index.html', {root: __dirname})
 })
 
-app.get('/logo.png', function (req, res) { 
-  //res.redirect( didContract.display.card.logo.uri );
-  var address = res.location(didContract.display.card.logo.uri).get('Location');
-  res.statusCode = 302;
-  var body = 'Redirecting to ' + address;
-  res.set('Content-Length', Buffer.byteLength(body));
-  if (res.req.method === 'HEAD') {
-    res.end();
-  } else {
-    res.end(body);
-  }
-})
-
-// Generate an presentation request, cache it on the server, and return a reference to the issuance request. 
-// The reference will be displayed to the user on the client side as a QR code.
+// Generate an presentation request, cache it on the server,
+// and return a reference to the issuance reqeust. The reference
+// will be displayed to the user on the client side as a QR code.
 app.get('/presentation-request', async (req, res) => {
-  requestTrace( req );
+
   // Construct a request to issue a verifiable credential 
   // using the verifiable credential issuer service
   state = req.session.id;
   const nonce = base64url.encode(Buffer.from(secureRandom.randomUint8Array(10)));
   const clientId = `https://${req.hostname}/presentation-response`;
+
   const requestBuilder = new RequestorBuilder({
     clientName: client.client_name,
     clientId: clientId,
@@ -150,7 +117,7 @@ app.get('/presentation-request', async (req, res) => {
     client_purpose: client.client_purpose,
     presentationDefinition: {
       input_descriptors: [{
-          id: "ninja",
+          id:"ninja",
           schema: {
               uri: [credentialType],
           },
@@ -164,42 +131,44 @@ app.get('/presentation-request', async (req, res) => {
     .useState(state);
 
   // Cache the issue request on the server
-  req.session.presentationRequest = await requestBuilder.build().create(); 
+  req.session.presentationRequest = await requestBuilder.build().create();
+  
   // Return a reference to the presentation request that can be encoded as a QR code
   var requestUri = encodeURIComponent(`https://${req.hostname}/presentation-request.jwt?id=${req.session.id}`);
   var presentationRequestReference = 'openid://vc/?request_uri=' + requestUri;
- // res.send(presentationRequestReference);
-  res.status(200).json({
-    'id': req.session.id, 
-    "link": presentationRequestReference
-    });
+  res.send(presentationRequestReference);
+
 })
 
-// When the QR code is scanned, Authenticator will dereference the presentation request to this URL.
-// This route simply returns the cached presentation request to Authenticator.
+
+// When the QR code is scanned, Authenticator will dereference the
+// presentation request to this URL. This route simply returns the cached
+// presentation request to Authenticator.
 app.get('/presentation-request.jwt', async (req, res) => {
-  requestTrace( req );
+
   // Look up the issue reqeust by session ID
   sessionStore.get(req.query.id, (error, session) => {
-    console.log( `Presentation Request:\n${session.presentationRequest.request}` );
     res.send(session.presentationRequest.request);
   })
+
 })
 
-// Once the user approves the presentation request, Authenticator will present the credential back to this server at this URL. 
-// We can verify the credential and extract its contents to verify the user is a Verified Credential Ninja.
+
+// Once the user approves the presentation request,
+// Authenticator will present the credential back to this server
+// at this URL. We can verify the credential and extract its contents
+// to verify the user is a Verified Credential Ninja.
+var parser = bodyParser.urlencoded({ extended: false });
 app.post('/presentation-response', parser, async (req, res) => {
-  requestTrace( req );
-  if(req.body.constructor === Object && Object.keys(req.body).length === 0) {
-    console.log('BODY missing');
-    return res.send()
-  }  
-  // Set up the Verifiable Credentials SDK to validate all signatures and claims in the credential presentation.
+
+  // Set up the Verifiable Credentials SDK to validate all signatures
+  // and claims in the credential presentation.
   const clientId = `https://${req.hostname}/presentation-response`
 
   // Validate the credential presentation and extract the credential's attributes.
   // If this check succeeds, the user is a Verified Credential Ninja.
   // Log a message to the console indicating successful verification of the credential.
+
   const validator = new ValidatorBuilder(crypto)
     .useTrustedIssuersForVerifiableCredentials({[credentialType]: issuerDid})
     .useAudienceUrl(clientId)
@@ -207,16 +176,18 @@ app.post('/presentation-response', parser, async (req, res) => {
 
   const token = req.body.id_token;
   const validationResponse = await validator.validate(req.body.id_token);
+  
   if (!validationResponse.result) {
-      console.error(`${getDateFormatted()}Validation failed: ${validationResponse.detailedError}`);
+      console.error(`Validation failed: ${validationResponse.detailedError}`);
       return res.send()
   }
 
   var verifiedCredential = validationResponse.validationResult.verifiableCredentials[credentialType].decodedToken;
-  console.log(`${getDateFormatted()}Verifier Validation result: ${verifiedCredential.vc.credentialSubject.firstName} ${verifiedCredential.vc.credentialSubject.lastName} is a ${credentialType}!`);
+  console.log(`${verifiedCredential.vc.credentialSubject.firstName} ${verifiedCredential.vc.credentialSubject.lastName} is a Verified Credential Ninja!`);
 
   // Store the successful presentation in session storage
   sessionStore.get(req.body.state, (error, session) => {
+
     session.verifiedCredential = verifiedCredential;
     sessionStore.set(req.body.state, session, (error) => {
       res.send();
@@ -224,142 +195,24 @@ app.post('/presentation-response', parser, async (req, res) => {
   })
 })
 
-// Checks to see if the server received a successful presentation of a Verified Credential Ninja card.
-// Updates the browser UI with a successful message if the user is a verified ninja.
+
+// Checks to see if the server received a successful presentation
+// of a Verified Credential Ninja card. Updates the browser UI with
+// a successful message if the user is a verified ninja.
 app.get('/presentation-response', async (req, res) => {
-  requestTrace( req );
-  var id = req.query.id;
+
   // If a credential has been received, display the contents in the browser
-  sessionStore.get( id, (error, session) => {
-    if (req.session.verifiedCredential) {
-      presentedCredential = req.session.verifiedCredential;
-      req.session.verifiedCredential = null;
-      console.log( 'VC Claims:' );
-      console.log( presentedCredential.vc.credentialSubject );
-      return res.send(`Congratulations, ${presentedCredential.vc.credentialSubject.firstName} ${presentedCredential.vc.credentialSubject.lastName} is a ${credentialType}!`)  
-    }
-    // If no credential has been received, just display an empty message
-    res.send('')
-  })
-})
+  if (req.session.verifiedCredential) {
 
-app.get('/presentation-response-b2c', async (req, res) => {
-  requestTrace( req );
-  var id = req.query.id;
-  // If a credential has been received, display the contents in the browser
-  sessionStore.get( id, (error, session) => {
-    var credentialsVerified = false;
-    var givenName = null;
-    var surName = null;
-    if (session && session.verifiedCredential) {
-      console.log( "/presentation-response - has VC " + id);
-      console.log(session.verifiedCredential);
-      givenName = session.verifiedCredential.vc.credentialSubject.firstName;
-      surName = session.verifiedCredential.vc.credentialSubject.lastName;
-      credentialsVerified = true;
-    } else {
-      console.log( "/presentation-response - no VC " + id);
-    }
-    res.status(200).json({
-      'id': id, 
-      'credentialsVerified': credentialsVerified,
-      'credentialType': credentialType,
-      'displayName': `${givenName} ${surName}`,
-      'givenName': givenName,
-      'surName': surName
-      });   
-  })
-
-})
-// same as above but for B2C where we return 409 Conflict if Auth Result isn't OK
-var parserJson = bodyParser.json();
-app.post('/presentation-response-b2c', parserJson, async (req, res) => {
-  requestTrace( req );
-  var id = req.body.id;  
-  // If a credential has been received, display the contents in the browser
-  sessionStore.get( id, (error, session) => {
-    if (session && session.verifiedCredential) {
-      console.log("Has VC. Will return it to B2C");
-      var tid = null;
-      var oid = null;
-      var username = null;
-      try {
-        oid = session.verifiedCredential.vc.credentialSubject.sub;
-        tid = session.verifiedCredential.vc.credentialSubject.tid;
-        username = session.verifiedCredential.vc.credentialSubject.username;
-      } 
-      catch {
-      }
-      var responseBody = {
-        'id': id, 
-        'credentialsVerified': true,
-        'credentialType': credentialType,
-        'displayName': `${session.verifiedCredential.vc.credentialSubject.firstName} ${session.verifiedCredential.vc.credentialSubject.lastName}`,
-        'givenName': session.verifiedCredential.vc.credentialSubject.firstName,
-        'surName': session.verifiedCredential.vc.credentialSubject.lastName,
-        'iss': session.verifiedCredential.iss,    // who issued this VC?
-        'sub': session.verifiedCredential.sub,    // who are you?
-        'key': session.verifiedCredential.sub.replace("did:ion:", "did.ion.").split(":")[0],
-        'oid': oid,
-        'tid': tid,
-        'username': username
-        };
-        req.session.verifiedCredential = null; // wack it
-        console.log( responseBody );
-        res.status(200).json( responseBody );   
-    } 
-    else {
-      console.log('Will return 409 to B2C');
-      res.status(409).json({
-        'version': '1.0.0', 
-        'status': 400,
-        'userMessage': 'Verifiable Credentials not presented'
-        });   
-    }
-  })
-})
-
-
-
-function doHttpRequest( endpoint, callback ) {
-  const options = {
-    method: 'GET',
-    port: 443,
-    hostname: url.parse(endpoint).hostname,
-    path: url.parse(endpoint).pathname
+    presentedCredential = req.session.verifiedCredential;
+    req.session.verifiedCredential = null;
+    return res.send(`Congratulations, ${presentedCredential.vc.credentialSubject.firstName} ${presentedCredential.vc.credentialSubject.lastName} is a Verified Credential Ninja!`)  
   }
-  var str = '';
-  try {
-    datarecv = function(response) {
-      response.on('data', function (chunk) {
-        str += chunk;
-      });
-      response.on('end', function() {
-        callback( endpoint, str );
-      });
-    }    
-    var req = https.request(options, datarecv).end();
-  } catch(ex) {
-    console.log(ex);
-  }
-}
 
-// https://beta.discover.did.msidentity.com/1.0/identifiers
-function didContractCallback( endpoint, data ) {
-  console.log( `\nDID contract - ${endpoint}\n\n${data}\n` );
-  didContract = JSON.parse( data );
-  credentialType = didContract.id;
-}
+  // If no credential has been received, just display an empty message
+  res.send('')
 
-function didResolverCallback( endpoint, data ) {
-  console.log( `\nDID resolver - ${endpoint}\n\n${data}\n` );
-  didInfo = JSON.parse( data );
-}
-
-doHttpRequest( `https://beta.discover.did.msidentity.com/1.0/identifiers/${config.did}`, didResolverCallback );
-doHttpRequest( credential, didContractCallback );
-
-console.log( didConfigFile );
+})
 
 // start server
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

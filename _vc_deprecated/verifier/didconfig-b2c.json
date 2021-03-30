@@ -1,0 +1,18 @@
+{
+    "azTenantId": "58b6b846-9cc7-4226-af35-5816c2f9336c",
+    "azClientId": "acdefd5c-a89a-47a0-93a7-462e31ec96e6",
+    "azClientSecret": "[REPLACE DURING BUILD]",
+    "kvVaultUri": "https://ccusdidpoc.vault.azure.net/",
+    "kvSigningKeyId": "sig_5848e1db",
+    "kvRemoteSigningKeyId" : "issuerSigningKeyIon-...guid...",
+    "did": "did:ion:EiDIyW-TteXeZ_FwW2gVkleUnqyf_LQUUcqLopiP4h8Vgw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJzaWdfMDNkZTJhZDQiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiRjZBTDVYWFVxQUowRzB6QzVHYXdEMUg4Rzh6OUY3ZFk5MWgwdFVTUzh5YyIsInkiOiJyYWllbWVTOUhvdS14cmFrRzJoU2lGcTNxNFVpOHhlVDktamNjel9VaHNvIn0sInB1cnBvc2VzIjpbImF1dGhlbnRpY2F0aW9uIiwiYXNzZXJ0aW9uTWV0aG9kIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkifV0sInNl",
+    "didVerifier": "TODO",
+    "resolverEndpoint": "https://beta.did.msidentity.com/v1.0/58b6b846-9cc7-4226-af35-5816c2f9336c/verifiableCredential/contracts/AccessAmericaTest",
+    "credentialType": "AccessAmericaTest",
+    "client": {
+        "client_name": "AccessAmericaVerifier",
+        "logo_uri": "https://ccuspocverifier.blob.core.windows.net/verifier-static/icon.png",
+        "tos_uri": "https://www.microsoft.com/servicesagreement",
+        "client_purpose": "B2C testing"
+    }
+}

@@ -6,11 +6,18 @@
 ////////////// Node packages
 var express = require('express')
 var session = require('express-session')
-//var base64url = require('base64url')
-//var secureRandom = require('secure-random');
+
+const https = require('https')
+const url = require('url')
 
 const dotenv = require('dotenv');
 const result = dotenv.config();
+// if (result.error) {
+//   console.error(`result.error: ${res.error}`);
+// }
+// else {
+//   console.log('parsed')
+// }
 
 //////////////// Verifiable Credential SDK
 var { ClientSecretCredential } = require('@azure/identity');
@@ -23,7 +30,13 @@ var { CryptoBuilder,
 
 
 ////////// Issuer's DID configuration values
-const config = require('./didconfig.json')
+var didConfigFile = process.argv.slice(2)[0];
+if ( !didConfigFile ) {
+  didConfigFile = './didconfig-b2c.json';
+}
+
+const config = require( didConfigFile );
+const { SSL_OP_COOKIE_EXCHANGE } = require('constants');
 
 ////////// Load the VC SDK with the Issuer's DID and Key Vault details
 var issuerAzClientSecret = process.env.ISSUER_AZ_CLIENT_SECRET;
@@ -38,8 +51,13 @@ var crypto = new CryptoBuilder()
     .build();
 
 /////////// Set the expected values for the Verifiable Credential
-const credential = 'https://beta.did.msidentity.com/v1.0/3c32ed40-8a10-465b-8ba4-0b1e86882668/verifiableCredential/contracts/VerifiedCredentialNinja';
-const credentialType = ['VerifiedCredentialNinja'];
+
+// const credential = 'https://portableidentitycards.azure-api.net/v1.0/3c32ed40-8a10-465b-8ba4-0b1e86882668/portableIdentities/contracts/VerifiedCredentialNinja';
+// const credentialType = ['VerifiedCredentialNinja'];
+
+const credential = config.resolverEndpoint
+var credentialType = [''];
+var didContract = null;
 
 //////////// Main Express server function
 // Note: You'll want to update port values for your setup.
@@ -79,6 +97,15 @@ app.get("/echo",
 // Serve index.html as the home page
 app.get('/', function (req, res) { 
   res.sendFile('public/index.html', {root: __dirname})
+})
+
+
+app.get('/logo.png', function (req, res) { 
+  if ( didContract.display ) {
+    res.redirect( didContract.display.card.logo.uri );
+  } else {
+    res.redirect( 'ninja-icon.png' );
+  }
 })
 
 // Generate an issuance request, cache it on the server,
@@ -128,6 +155,35 @@ app.get('/issue-request.jwt', async (req, res) => {
   })
 
 })
+
+function getDidContract( ) {
+  const options = {
+    method: 'GET',
+    port: 443,
+    hostname: url.parse(credential).hostname,
+    path: url.parse(credential).pathname
+  }
+  var str = '';
+  try {
+    callback = function(response) {
+      response.on('data', function (chunk) {
+        str += chunk;
+      });
+      response.on('end', function() {
+        console.log( 'DID contract\n' + str );
+        didContract = JSON.parse( str );
+        credentialType[0] = didContract.id;
+      });
+    }    
+    var req = https.request(options, callback).end();
+  } catch(ex) {
+    console.log(ex);
+  }
+}
+
+getDidContract();
+
+console.log( didConfigFile );
 
 // start server
 app.listen(port, () => console.log(`Example issuer app listening on port ${port}!`))

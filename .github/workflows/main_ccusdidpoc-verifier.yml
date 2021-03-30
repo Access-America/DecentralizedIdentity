@@ -13,9 +13,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./vc/verifier
 
     steps:
     - uses: actions/checkout@v2
@@ -27,9 +24,13 @@ jobs:
 
     - name: npm install, build, and test
       run: |
+        cd vc/verifier
         npm install
-        npm run build --if-present
-        npm run test --if-present
+        
+    - name: zip    
+      uses: montudor/action-zip@v0.1.1
+      with:
+        args: zip -qq -r node-app.zip vc/verifier
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
@@ -52,6 +53,12 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: node-app
+        path: .
+        
+    - name: unzip    
+      uses: montudor/action-zip@v0.1.1
+      with:
+        args: zip -qq -r node-app.zip node-app
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
@@ -60,4 +67,4 @@ jobs:
         app-name: 'ccusdidpoc-verifier'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_2c49d063e3614f33a546401181fa9000 }}
-        package: .
+        package: node-app
