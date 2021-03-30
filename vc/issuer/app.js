@@ -38,8 +38,8 @@ var crypto = new CryptoBuilder()
     .build();
 
 /////////// Set the expected values for the Verifiable Credential
-const credential = 'https://beta.did.msidentity.com/v1.0/3c32ed40-8a10-465b-8ba4-0b1e86882668/verifiableCredential/contracts/VerifiedCredentialNinja';
-const credentialType = ['VerifiedCredentialNinja'];
+const credential = 'https://beta.did.msidentity.com/v1.0/58b6b846-9cc7-4226-af35-5816c2f9336c/verifiableCredential/contracts/AccessAmericaTest';
+const credentialType = ['AccessAmerica'];
 
 //////////// Main Express server function
 // Note: You'll want to update port values for your setup.
@@ -92,7 +92,7 @@ app.get('/issue-request', async (req, res) => {
     presentationDefinition: {
       input_descriptors: [
         {
-          id: "ninja",
+          id: "accessamerica",
           schema: {
             uri: credentialType,
           },
