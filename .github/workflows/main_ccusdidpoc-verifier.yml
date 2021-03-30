@@ -29,7 +29,7 @@ jobs:
         
     - name: Zip
       run: zip -qq -r node-app.zip verifier
-      working-directory: vc/
+      working-directory: ./vc
   
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
