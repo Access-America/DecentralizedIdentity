@@ -28,19 +28,19 @@ jobs:
         npm install
         
     - name: Zip
-      run: zip -qq -r node-app.zip ./verifier
+      run: zip -qq -r verifier.zip ./verifier
       working-directory: ./vc
       
-    - name: filecheck
-      run: |
-        cd vc
-        ls -ltr
+#     - name: filecheck
+#       run: |
+#         cd vc
+#         ls -ltr
 
-#     - name: Upload artifact for deployment job
-#       uses: actions/upload-artifact@v2
-#       with:
-#         name: verifier
-#         path: ./vc/verifier.zip
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v2
+      with:
+        name: verifier
+        path: ./vc/verifier.zip
 
 #   deploy:
 #     runs-on: ubuntu-latest
