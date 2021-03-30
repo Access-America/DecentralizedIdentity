@@ -32,7 +32,9 @@ jobs:
       working-directory: ./vc
       
     - name: filecheck
-      run: ls -ltr
+      run: |
+        cd vc
+        ls -ltr
 
 #     - name: Upload artifact for deployment job
 #       uses: actions/upload-artifact@v2
