@@ -33,7 +33,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: node-app
-        path: .
+        path: vc/verifier
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,6 +50,7 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: node-app
+        path: vc/verifier
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
@@ -58,4 +59,4 @@ jobs:
         app-name: 'ccusdidpoc-verifier'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_2c49d063e3614f33a546401181fa9000 }}
-        package: .
+        package: vc/verifier
