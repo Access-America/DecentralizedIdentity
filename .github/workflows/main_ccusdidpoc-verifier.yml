@@ -30,7 +30,7 @@ jobs:
     - name: zip    
       uses: montudor/action-zip@v0.1.1
       with:
-        args: zip -qq -r node-app.zip vc/verifier
+        args: zip -qq -r node-app.zip verifier/*
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
@@ -58,4 +58,4 @@ jobs:
         app-name: 'ccusdidpoc-verifier'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_2c49d063e3614f33a546401181fa9000 }}
-        package: node-app
+        package: ./node-app
