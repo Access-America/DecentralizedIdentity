@@ -30,7 +30,7 @@ jobs:
     - name: zip    
       uses: montudor/action-zip@v0.1.1
       with:
-        args: zip -qq -r node-app.zip verifier/*
+        args: zip -qq -r node-app.zip . -i verifier/*
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
