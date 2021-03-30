@@ -1,7 +1,7 @@
 {
     "azTenantId": "58b6b846-9cc7-4226-af35-5816c2f9336c",
     "azClientId": "acdefd5c-a89a-47a0-93a7-462e31ec96e6",
-    "azClientSecret": "[REPLACE WITH ENV VARIABLE]",
+    "azClientSecret": "[SOURCED FROM GITHUB SECRETS ENV VARIABLE]",
     "kvVaultUri": "https://ccusdidpoc.vault.azure.net/",
     "kvSigningKeyId": "sig_03de2ad4",
     "kvRemoteSigningKeyId" : "issuerSigningKeyIon-03de2ad4-b47f-02ad-a564-60111e333b5a",
