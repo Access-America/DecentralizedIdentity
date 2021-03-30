@@ -27,11 +27,10 @@ jobs:
         cd vc/verifier
         npm install
         
-    - name: zip    
-      uses: montudor/action-zip@v0.1.1
-      with:
-        args: zip -qq -r node-app.zip verifier
-
+    - name: Zip
+      run: zip -qq -r node-app.zip verifier
+      working-directory: vc/
+  
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
       with:
