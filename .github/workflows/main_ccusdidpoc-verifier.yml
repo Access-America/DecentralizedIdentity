@@ -28,8 +28,8 @@ jobs:
         npm install
         
     - name: Zip
-      run: zip -qq -r verifier.zip ./verifier/*
-      working-directory: ./vc
+      run: zip -qq -r verifier.zip *
+      working-directory: ./vc/verifier
       
 #     - name: filecheck
 #       run: |
