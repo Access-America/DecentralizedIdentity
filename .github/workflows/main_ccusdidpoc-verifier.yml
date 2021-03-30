@@ -26,12 +26,18 @@ jobs:
       run: |
         cd vc/verifier
         npm install
+        
+    - name: zip
+      uses: papeloto/action-zip@v1
+      with:
+        files: vc/verifier
+        dest: ./node-app.zip
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v2
       with:
         name: node-app
-        path: vc/verifier
+        path: ./node-app.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,7 +54,7 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: node-app
-        path: vc/verifier
+        path: ./node-app.zip
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
@@ -57,4 +63,4 @@ jobs:
         app-name: 'ccusdidpoc-verifier'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_2c49d063e3614f33a546401181fa9000 }}
-        package: vc/verifier
+        package: ./node-app.zip
