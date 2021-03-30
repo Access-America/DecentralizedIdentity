@@ -51,11 +51,6 @@ jobs:
       with:
         name: node-app
         path: .
-        
-    - name: unzip    
-      uses: montudor/action-zip@v0.1.1
-      with:
-        args: zip -qq -r ./node-app.zip node-app
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
