@@ -4,9 +4,6 @@
 // Verifiable Credentials Verifier Sample
 
 ////////////// Node packages
-//var http = require('http');
-//var fs = require('fs');
-//var path = require('path');
 var express = require('express')
 var session = require('express-session')
 var bodyParser = require('body-parser')
@@ -14,7 +11,7 @@ var base64url = require('base64url')
 var secureRandom = require('secure-random');
 
 const dotenv = require('dotenv');
-const result = dotenv.config();
+dotenv.config(); // loads environment variables
 
 //////////////// Verifiable Credential SDK
 var { ClientSecretCredential } = require('@azure/identity');
@@ -24,7 +21,7 @@ var { CryptoBuilder,
       KeyReference
     } = require('verifiablecredentials-verification-sdk-typescript');
 
-/////////// Verifier's client details
+/////////// Verifiers client details
 const client = {
   client_name: 'Access America Verifier',
   logo_uri: 'https://ccuspocverifier.blob.core.windows.net/verifier-static/icon.png',
@@ -32,7 +29,7 @@ const client = {
   client_purpose: 'Test Access America credential verification.'
 }
 
-////////// Verifier's DID configuration values
+////////// Verifiers DID configuration values
 const config = require('./didconfig.json')
 if (!config.did) {
   throw new Error('Make sure you run the DID generation script before starting the server.')
@@ -92,10 +89,18 @@ app.get("/echo",
     }
 );
 
-// Serve index.html as the home page
-app.get('/', function (req, res) { 
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
+  //next();
   res.sendFile('public/index.html', {root: __dirname})
-})
+});
+/*
+// Serve index.html as the home page
+  app.get('/', function (req, res) { 
+    res.sendFile('public/index.html', {root: __dirname})
+  })
+*/
 
 // Generate an presentation request, cache it on the server,
 // and return a reference to the issuance reqeust. The reference
