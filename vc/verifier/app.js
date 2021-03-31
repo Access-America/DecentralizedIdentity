@@ -89,18 +89,19 @@ app.get("/echo",
     }
 );
 
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
-  //next();
-  res.sendFile('public/index.html', {root: __dirname})
-});
-/*
+// Enable CORS in Azure
+// https://docs.microsoft.com/en-us/azure/active-directory-b2c/customize-ui-with-html?pivots=b2c-user-flow#2-create-an-azure-blob-storage-account
+
+// app.use(function (req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
+//   next();
+// });
+
 // Serve index.html as the home page
   app.get('/', function (req, res) { 
     res.sendFile('public/index.html', {root: __dirname})
   })
-*/
 
 // Generate an presentation request, cache it on the server,
 // and return a reference to the issuance reqeust. The reference
