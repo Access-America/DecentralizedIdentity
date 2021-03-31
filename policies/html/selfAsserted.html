@@ -107,7 +107,10 @@
         checkPresentationResponse();
         fetch(apiUrl + '/presentation-request')
         .then(function(response) {
+            console.log('/presentation-request called');
             response.text().then(function(message) {
+                console.log('/presentation-request resp received');
+                console.log(`message: ${message}`);
                 respPresReq = JSON.parse(message);
                 if( /Android/i.test(navigator.userAgent) ) {
                     console.log(`Android device! Using deep link (${respPresReq.link}).`);
@@ -120,11 +123,11 @@
                     console.log(`Not Android. Generating QR code encoded with ${respPresReq.link}`);
                     qrcode.makeCode(respPresReq.link);
                 }
-            }).catch(error => {
-                console.log(error.message);
+            }).catch(error1 => {
+                console.log(error1);
             })
-        }).catch(error => {
-            console.log(error.message);
+        }).catch(error2 => {
+            console.log(error2);
         })
 
         var tId = null;
