@@ -93,7 +93,8 @@ function requestTrace( req ) {
 // echo function so you can test deployment
 app.get("/echo",
   function (req, res) {
-    requestTrace( req );
+    requestTrace(req);
+    console.log(req);
     res.status(200).json({
       'date': new Date().toISOString(),
       'api': req.protocol + '://' + req.hostname + req.originalUrl,
@@ -110,17 +111,17 @@ app.get("/echo",
 // Serve index.html as the home page
 app.get('/', function (req, res) { 
   requestTrace(req);
+  console.log(req);
   res.sendFile('public/index.html', {root: __dirname})
 })
 
-// Generate an presentation request, cache it on the server,
-// and return a reference to the issuance reqeust. The reference
-// will be displayed to the user on the client side as a QR code.
+// Generate an presentation request, cache it on the server, and return a reference to the issuance request.
+// The reference will be displayed to the user on the client side as a QR code.
 app.get('/presentation-request', async (req, res) => {
-  requestTrace( req );
-  
-  // Construct a request to issue a verifiable credential 
-  // using the verifiable credential issuer service
+  requestTrace(req);
+  console.log(req);
+
+  // Construct a request to issue a verifiable credential using the verifiable credential issuer service
   state = req.session.id;
   const nonce = base64url.encode(Buffer.from(secureRandom.randomUint8Array(10)));
   const clientId = `https://${req.hostname}/presentation-response`;
@@ -142,8 +143,8 @@ app.get('/presentation-request', async (req, res) => {
               manifest: credential
           }]
       }]
-  }
-},  crypto)
+    }
+  }, crypto)
     .useNonce(nonce)
     .useState(state);
 
@@ -152,32 +153,31 @@ app.get('/presentation-request', async (req, res) => {
   
   // Return a reference to the presentation request that can be encoded as a QR code
   var requestUri = encodeURIComponent(`https://${req.hostname}/presentation-request.jwt?id=${req.session.id}`);
+  console.log($`requestUri: ${requestUri}`);
   var presentationRequestReference = 'openid://vc/?request_uri=' + requestUri;
   res.send(presentationRequestReference);
-
 })
-
 
 // When the QR code is scanned, Authenticator will dereference the
 // presentation request to this URL. This route simply returns the cached
 // presentation request to Authenticator.
 app.get('/presentation-request.jwt', async (req, res) => {
-
-  // Look up the issue reqeust by session ID
+  requestTrace(req);
+  console.log(req);
+  
+  // Look up the issue request by session ID
   sessionStore.get(req.query.id, (error, session) => {
     res.send(session.presentationRequest.request);
   })
-
 })
 
-
-// Once the user approves the presentation request,
-// Authenticator will present the credential back to this server
-// at this URL. We can verify the credential and extract its contents
-// to verify the user is a Verified Credential Ninja.
+// Once the user approves the presentation request, Authenticator will present the credential back to this server at this URL.
+// We can verify the credential and extract its contents to verify the user is a Verified Credential Ninja.
 var parser = bodyParser.urlencoded({ extended: false });
 app.post('/presentation-response', parser, async (req, res) => {
-
+  requestTrace(req);
+  console.log(req);
+  
   // Set up the Verifiable Credentials SDK to validate all signatures
   // and claims in the credential presentation.
   const clientId = `https://${req.hostname}/presentation-response`
@@ -192,7 +192,7 @@ app.post('/presentation-response', parser, async (req, res) => {
     .build();
 
   const token = req.body.id_token;
-  const validationResponse = await validator.validate(req.body.id_token);
+  const validationResponse = await validator.validate(token);
   
   if (!validationResponse.result) {
       console.error(`Validation failed: ${validationResponse.detailedError}`);
@@ -204,7 +204,6 @@ app.post('/presentation-response', parser, async (req, res) => {
 
   // Store the successful presentation in session storage
   sessionStore.get(req.body.state, (error, session) => {
-
     session.verifiedCredential = verifiedCredential;
     sessionStore.set(req.body.state, session, (error) => {
       res.send();
@@ -212,15 +211,14 @@ app.post('/presentation-response', parser, async (req, res) => {
   })
 })
 
-
-// Checks to see if the server received a successful presentation
-// of a Verified Credential Ninja card. Updates the browser UI with
-// a successful message if the user is a verified ninja.
+// Checks to see if the server received a successful presentation of a Verified Credential Ninja card.
+// Updates the browser UI with a successful message if the user is a verified ninja.
 app.get('/presentation-response', async (req, res) => {
+  requestTrace(req);
+  console.log(req);  
 
   // If a credential has been received, display the contents in the browser
   if (req.session.verifiedCredential) {
-
     presentedCredential = req.session.verifiedCredential;
     req.session.verifiedCredential = null;
     return res.send(`Congratulations, ${presentedCredential.vc.credentialSubject.firstName} ${presentedCredential.vc.credentialSubject.lastName} is a Verified Credential Ninja!`)  
@@ -228,7 +226,6 @@ app.get('/presentation-response', async (req, res) => {
 
   // If no credential has been received, just display an empty message
   res.send('')
-
 })
 
 // start server
