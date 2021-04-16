@@ -52,7 +52,6 @@ var crypto = new CryptoBuilder()
     .useDid(config.did)
     .build();
 
-
 //////////// Main Express server function
 // Note: You'll want to update port values for your setup.
 const app = express()
@@ -73,41 +72,53 @@ app.use(session({
   store: sessionStore
 }))
 
-// echo function so you can test deployment
-app.get("/echo",
-    function (req, res) {
-        res.status(200).json({
-            'date': new Date().toISOString(),
-            'api': req.protocol + '://' + req.hostname + req.originalUrl,
-            'Host': req.hostname,
-            'x-forwarded-for': req.headers['x-forwarded-for'],
-            'x-original-host': req.headers['x-original-host'],
-            'issuerDid': issuerDid,
-            'credentialType': credentialType,
-            'client_purpose': client.client_purpose
-            });
-    }
-);
-
 // Enable CORS in Azure
 // https://docs.microsoft.com/en-us/azure/active-directory-b2c/customize-ui-with-html?pivots=b2c-user-flow#2-create-an-azure-blob-storage-account
-
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+function getDateFormatted() {
+  return new Date().toISOString().replace("T", " ");
+}
+function requestTrace( req ) {
+  var h1 = '//****************************************************************************';
+  console.log( `${h1}\n${getDateFormatted()}: ${req.method} ${req.protocol}://${req.hostname}${req.originalUrl}\n'x-forwarded-for': ${req.headers['x-forwarded-for']}` );
+  if ( req.method == 'POST') {
+    console.log( req.body )
+  }
+}
+
+// echo function so you can test deployment
+app.get("/echo",
+  function (req, res) {
+    requestTrace( req );
+    res.status(200).json({
+      'date': new Date().toISOString(),
+      'api': req.protocol + '://' + req.hostname + req.originalUrl,
+      'Host': req.hostname,
+      'x-forwarded-for': req.headers['x-forwarded-for'],
+      'x-original-host': req.headers['x-original-host'],
+      'issuerDid': issuerDid,
+      'credentialType': credentialType,
+      'client_purpose': client.client_purpose
+    });
+  }
+);
 
 // Serve index.html as the home page
-  app.get('/', function (req, res) { 
-    res.sendFile('public/index.html', {root: __dirname})
-  })
+app.get('/', function (req, res) { 
+  requestTrace(req);
+  res.sendFile('public/index.html', {root: __dirname})
+})
 
 // Generate an presentation request, cache it on the server,
 // and return a reference to the issuance reqeust. The reference
 // will be displayed to the user on the client side as a QR code.
 app.get('/presentation-request', async (req, res) => {
-
+  requestTrace( req );
+  
   // Construct a request to issue a verifiable credential 
   // using the verifiable credential issuer service
   state = req.session.id;
