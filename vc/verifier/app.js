@@ -84,9 +84,9 @@ function getDateFormatted() {
 }
 function requestTrace( req ) {
   var h1 = '//****************************************************************************';
-  console.log( `${h1}\n${getDateFormatted()}: ${req.method} ${req.protocol}://${req.hostname}${req.originalUrl}\n'x-forwarded-for': ${req.headers['x-forwarded-for']}` );
-  if ( req.method == 'POST') {
-    console.log( req.body )
+  console.log(`${h1}\n${getDateFormatted()}: ${req.method} ${req.protocol}://${req.hostname}${req.originalUrl}\n'x-forwarded-for': ${req.headers['x-forwarded-for']}`);
+  if (req.method == 'POST') {
+    console.log(req.body)
   }
 }
 
@@ -94,7 +94,7 @@ function requestTrace( req ) {
 app.get("/echo",
   function (req, res) {
     requestTrace(req);
-    console.log(req);
+    console.log(`GET /echo: ${req}`);
     res.status(200).json({
       'date': new Date().toISOString(),
       'api': req.protocol + '://' + req.hostname + req.originalUrl,
@@ -111,15 +111,14 @@ app.get("/echo",
 // Serve index.html as the home page
 app.get('/', function (req, res) { 
   requestTrace(req);
-  console.log(req);
+  console.log(`requesting public/index.html: ${req}`);
   res.sendFile('public/index.html', {root: __dirname})
 })
 
 // Generate an presentation request, cache it on the server, and return a reference to the issuance request.
 // The reference will be displayed to the user on the client side as a QR code.
 app.get('/presentation-request', async (req, res) => {
-  requestTrace(req);
-  console.log(req);
+  console.log(`GET /presentation-request: ${req}`);
 
   // Construct a request to issue a verifiable credential using the verifiable credential issuer service
   state = req.session.id;
@@ -162,7 +161,7 @@ app.get('/presentation-request', async (req, res) => {
 // presentation request to this URL. This route simply returns the cached
 // presentation request to Authenticator.
 app.get('/presentation-request.jwt', async (req, res) => {
-  console.log(req);
+  console.log(`GET /presentation-request.jwt: ${req}`);
   // Look up the issue request by session ID
   sessionStore.get(req.query.id, (error, session) => {
     res.send(session.presentationRequest.request);
@@ -173,8 +172,8 @@ app.get('/presentation-request.jwt', async (req, res) => {
 // We can verify the credential and extract its contents to verify the user is a Verified Credential Ninja.
 var parser = bodyParser.urlencoded({ extended: false });
 app.post('/presentation-response', parser, async (req, res) => {
-  console.log(req);
-  
+  console.log(`POST /presentation-response: ${req}`);
+
   // Set up the Verifiable Credentials SDK to validate all signatures
   // and claims in the credential presentation.
   const clientId = `https://${req.hostname}/presentation-response`
@@ -189,7 +188,6 @@ app.post('/presentation-response', parser, async (req, res) => {
     .build();
 
   const validationResponse = await validator.validate(req.body.id_token);
-  
   if (!validationResponse.result) {
       console.error(`Validation failed: ${validationResponse.detailedError}`);
       return res.send()
@@ -210,13 +208,16 @@ app.post('/presentation-response', parser, async (req, res) => {
 // Checks to see if the server received a successful presentation of a Verified Credential Ninja card.
 // Updates the browser UI with a successful message if the user is a verified ninja.
 app.get('/presentation-response', async (req, res) => {
-  console.log(req);  
+  console.log(`GET /presentation-response: ${req}`);
 
   // If a credential has been received, display the contents in the browser
   if (req.session.verifiedCredential) {
     presentedCredential = req.session.verifiedCredential;
     req.session.verifiedCredential = null;
     return res.send(`Congratulations, ${presentedCredential.vc.credentialSubject.firstName} ${presentedCredential.vc.credentialSubject.lastName} is a Verified Credential Ninja!`)  
+  }
+  else {
+    console.log('Credentials not verified')
   }
 
   // If no credential has been received, just display an empty message
