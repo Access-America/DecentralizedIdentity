@@ -162,9 +162,7 @@ app.get('/presentation-request', async (req, res) => {
 // presentation request to this URL. This route simply returns the cached
 // presentation request to Authenticator.
 app.get('/presentation-request.jwt', async (req, res) => {
-  requestTrace(req);
   console.log(req);
-  
   // Look up the issue request by session ID
   sessionStore.get(req.query.id, (error, session) => {
     res.send(session.presentationRequest.request);
@@ -175,7 +173,6 @@ app.get('/presentation-request.jwt', async (req, res) => {
 // We can verify the credential and extract its contents to verify the user is a Verified Credential Ninja.
 var parser = bodyParser.urlencoded({ extended: false });
 app.post('/presentation-response', parser, async (req, res) => {
-  requestTrace(req);
   console.log(req);
   
   // Set up the Verifiable Credentials SDK to validate all signatures
@@ -191,8 +188,7 @@ app.post('/presentation-response', parser, async (req, res) => {
     .useAudienceUrl(clientId)
     .build();
 
-  const token = req.body.id_token;
-  const validationResponse = await validator.validate(token);
+  const validationResponse = await validator.validate(req.body.id_token);
   
   if (!validationResponse.result) {
       console.error(`Validation failed: ${validationResponse.detailedError}`);
@@ -214,7 +210,6 @@ app.post('/presentation-response', parser, async (req, res) => {
 // Checks to see if the server received a successful presentation of a Verified Credential Ninja card.
 // Updates the browser UI with a successful message if the user is a verified ninja.
 app.get('/presentation-response', async (req, res) => {
-  requestTrace(req);
   console.log(req);  
 
   // If a credential has been received, display the contents in the browser
