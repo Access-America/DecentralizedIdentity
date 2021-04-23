@@ -108,6 +108,7 @@ app.get("/echo",
 // will be displayed to the user on the client side as a QR code.
 app.get('/presentation-request', async (req, res) => {
 
+  console.log('initiate /presentation-request GET');
   // Construct a request to issue a verifiable credential 
   // using the verifiable credential issuer service
   state = req.session.id;
@@ -136,14 +137,16 @@ app.get('/presentation-request', async (req, res) => {
     .useNonce(nonce)
     .useState(state);
 
+    console.log('requestBuilder: ' + requestBuilder);
   // Cache the issue request on the server
   req.session.presentationRequest = await requestBuilder.build().create();
   
   // Return a reference to the presentation request that can be encoded as a QR code
   var requestUri = encodeURIComponent(`https://${req.hostname}/presentation-request.jwt?id=${req.session.id}`);
   var presentationRequestReference = 'openid://vc/?request_uri=' + requestUri;
+  console.log('about to send openid:' + presentationRequestReference);
   res.send(presentationRequestReference);
-
+  console.log('Sent openid:');
 })
 
 
@@ -166,6 +169,8 @@ app.get('/presentation-request.jwt', async (req, res) => {
 // to verify the user is a Verified Credential Ninja.
 var parser = bodyParser.urlencoded({ extended: false });
 app.post('/presentation-response', parser, async (req, res) => {
+
+  console.log('/presentation-response POST initiated');
 
   // Set up the Verifiable Credentials SDK to validate all signatures
   // and claims in the credential presentation.
@@ -206,6 +211,8 @@ app.post('/presentation-response', parser, async (req, res) => {
 // of a Verified Credential Ninja card. Updates the browser UI with
 // a successful message if the user is a verified ninja.
 app.get('/presentation-response', async (req, res) => {
+
+  console.log('/presentation-response GET initiated');
 
   // If a credential has been received, display the contents in the browser
   if (req.session.verifiedCredential) {
