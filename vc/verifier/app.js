@@ -52,6 +52,7 @@ var crypto = new CryptoBuilder()
     .useDid(config.did)
     .build();
 
+
 //////////// Main Express server function
 // Note: You'll want to update port values for your setup.
 const app = express()
@@ -72,55 +73,43 @@ app.use(session({
   store: sessionStore
 }))
 
-// Enable CORS in Azure
-// https://docs.microsoft.com/en-us/azure/active-directory-b2c/customize-ui-with-html?pivots=b2c-user-flow#2-create-an-azure-blob-storage-account
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-function getDateFormatted() {
-  return new Date().toISOString().replace("T", " ");
-}
-function requestTrace( req ) {
-  var h1 = '//****************************************************************************';
-  console.log(`${h1}\n${getDateFormatted()}: ${req.method} ${req.protocol}://${req.hostname}${req.originalUrl}\n'x-forwarded-for': ${req.headers['x-forwarded-for']}`);
-  if (req.method == 'POST') {
-    console.log(req.body)
-  }
-}
-
 // echo function so you can test deployment
 app.get("/echo",
-  function (req, res) {
-    requestTrace(req);
-    console.log(`GET /echo: ${req}`);
-    res.status(200).json({
-      'date': new Date().toISOString(),
-      'api': req.protocol + '://' + req.hostname + req.originalUrl,
-      'Host': req.hostname,
-      'x-forwarded-for': req.headers['x-forwarded-for'],
-      'x-original-host': req.headers['x-original-host'],
-      'issuerDid': issuerDid,
-      'credentialType': credentialType,
-      'client_purpose': client.client_purpose
-    });
-  }
+    function (req, res) {
+        res.status(200).json({
+            'date': new Date().toISOString(),
+            'api': req.protocol + '://' + req.hostname + req.originalUrl,
+            'Host': req.hostname,
+            'x-forwarded-for': req.headers['x-forwarded-for'],
+            'x-original-host': req.headers['x-original-host'],
+            'issuerDid': issuerDid,
+            'credentialType': credentialType,
+            'client_purpose': client.client_purpose
+            });
+    }
 );
 
+// Enable CORS in Azure
+// https://docs.microsoft.com/en-us/azure/active-directory-b2c/customize-ui-with-html?pivots=b2c-user-flow#2-create-an-azure-blob-storage-account
+
+// app.use(function (req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
+//   next();
+// });
+
 // Serve index.html as the home page
-app.get('/', function (req, res) { 
-  requestTrace(req);
-  console.log(`requesting public/index.html: ${req}`);
-  res.sendFile('public/index.html', {root: __dirname})
-})
+  app.get('/', function (req, res) { 
+    res.sendFile('public/index.html', {root: __dirname})
+  })
 
-// Generate an presentation request, cache it on the server, and return a reference to the issuance request.
-// The reference will be displayed to the user on the client side as a QR code.
+// Generate an presentation request, cache it on the server,
+// and return a reference to the issuance reqeust. The reference
+// will be displayed to the user on the client side as a QR code.
 app.get('/presentation-request', async (req, res) => {
-  console.log(`GET /presentation-request: ${req}`);
 
-  // Construct a request to issue a verifiable credential using the verifiable credential issuer service
+  // Construct a request to issue a verifiable credential 
+  // using the verifiable credential issuer service
   state = req.session.id;
   const nonce = base64url.encode(Buffer.from(secureRandom.randomUint8Array(10)));
   const clientId = `https://${req.hostname}/presentation-response`;
@@ -142,8 +131,8 @@ app.get('/presentation-request', async (req, res) => {
               manifest: credential
           }]
       }]
-    }
-  }, crypto)
+  }
+},  crypto)
     .useNonce(nonce)
     .useState(state);
 
@@ -152,27 +141,31 @@ app.get('/presentation-request', async (req, res) => {
   
   // Return a reference to the presentation request that can be encoded as a QR code
   var requestUri = encodeURIComponent(`https://${req.hostname}/presentation-request.jwt?id=${req.session.id}`);
-  console.log($`requestUri: ${requestUri}`);
   var presentationRequestReference = 'openid://vc/?request_uri=' + requestUri;
   res.send(presentationRequestReference);
+
 })
+
 
 // When the QR code is scanned, Authenticator will dereference the
 // presentation request to this URL. This route simply returns the cached
 // presentation request to Authenticator.
 app.get('/presentation-request.jwt', async (req, res) => {
-  console.log(`GET /presentation-request.jwt: ${req}`);
-  // Look up the issue request by session ID
+
+  // Look up the issue reqeust by session ID
   sessionStore.get(req.query.id, (error, session) => {
     res.send(session.presentationRequest.request);
   })
+
 })
 
-// Once the user approves the presentation request, Authenticator will present the credential back to this server at this URL.
-// We can verify the credential and extract its contents to verify the user is a Verified Credential Ninja.
+
+// Once the user approves the presentation request,
+// Authenticator will present the credential back to this server
+// at this URL. We can verify the credential and extract its contents
+// to verify the user is a Verified Credential Ninja.
 var parser = bodyParser.urlencoded({ extended: false });
 app.post('/presentation-response', parser, async (req, res) => {
-  console.log(`POST /presentation-response: ${req}`);
 
   // Set up the Verifiable Credentials SDK to validate all signatures
   // and claims in the credential presentation.
@@ -187,7 +180,9 @@ app.post('/presentation-response', parser, async (req, res) => {
     .useAudienceUrl(clientId)
     .build();
 
+  const token = req.body.id_token;
   const validationResponse = await validator.validate(req.body.id_token);
+  
   if (!validationResponse.result) {
       console.error(`Validation failed: ${validationResponse.detailedError}`);
       return res.send()
@@ -198,6 +193,7 @@ app.post('/presentation-response', parser, async (req, res) => {
 
   // Store the successful presentation in session storage
   sessionStore.get(req.body.state, (error, session) => {
+
     session.verifiedCredential = verifiedCredential;
     sessionStore.set(req.body.state, session, (error) => {
       res.send();
@@ -205,23 +201,23 @@ app.post('/presentation-response', parser, async (req, res) => {
   })
 })
 
-// Checks to see if the server received a successful presentation of a Verified Credential Ninja card.
-// Updates the browser UI with a successful message if the user is a verified ninja.
+
+// Checks to see if the server received a successful presentation
+// of a Verified Credential Ninja card. Updates the browser UI with
+// a successful message if the user is a verified ninja.
 app.get('/presentation-response', async (req, res) => {
-  console.log(`GET /presentation-response: ${req}`);
 
   // If a credential has been received, display the contents in the browser
   if (req.session.verifiedCredential) {
+
     presentedCredential = req.session.verifiedCredential;
     req.session.verifiedCredential = null;
     return res.send(`Congratulations, ${presentedCredential.vc.credentialSubject.firstName} ${presentedCredential.vc.credentialSubject.lastName} is a Verified Credential Ninja!`)  
   }
-  else {
-    console.log('Credentials not verified')
-  }
 
   // If no credential has been received, just display an empty message
   res.send('')
+
 })
 
 // start server
