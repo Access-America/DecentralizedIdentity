@@ -144,9 +144,11 @@ app.get('/presentation-request', async (req, res) => {
   // Return a reference to the presentation request that can be encoded as a QR code
   var requestUri = encodeURIComponent(`https://${req.hostname}/presentation-request.jwt?id=${req.session.id}`);
   var presentationRequestReference = 'openid://vc/?request_uri=' + requestUri;
-  console.log('about to send openid:' + presentationRequestReference);
-  res.send(presentationRequestReference);
-  console.log('Sent openid:');
+ // res.send(presentationRequestReference);
+  res.status(200).json({
+    'id': req.session.id, 
+    "link": presentationRequestReference
+    });
 })
 
 
